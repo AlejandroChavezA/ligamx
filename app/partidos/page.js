@@ -115,27 +115,27 @@ export default function PartidosPage() {
   }, [selectedTemporada, selectedJornada, selectedStatus, allPartidos]);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-950 min-h-screen">
-      <div className="pt-8 pb-4 bg-gradient-to-r liga-mx-gradient">
+    <div className="min-h-screen bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-primary/10">
+      <div className="pt-12 pb-8 bg-gradient-to-br from-purple-500 via-blue-500 to-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-white">Partidos Liga MX</h1>
-          <p className="mt-2 text-purple-100">Todos los partidos de la temporada actual con estadísticas detalladas</p>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Partidos Liga MX</h1>
+          <p className="mt-3 text-lg text-purple-100 tracking-wide">Todos los partidos de la temporada actual con estadísticas detalladas</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-          <div className="flex items-center mb-4 sm:mb-0">
-            <CalendarDays className="h-5 w-5 text-primary mr-2" />
-            <h2 className="text-2xl font-bold text-foreground">Calendario de partidos</h2>
+      <div className="max-w-7xl mx-auto px-4 -mt-8 pb-12 sm:px-6 lg:px-8">
+        <div className="bg-card rounded-xl shadow-lg border backdrop-blur-sm p-6 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex items-center">
+              <CalendarDays className="h-6 w-6 text-primary mr-3" />
+              <h2 className="text-2xl font-bold text-foreground">Calendario de partidos</h2>
+            </div>
+            <TeamFilter />
           </div>
-          <TeamFilter />
-        </div>
 
-        <FilterCard className="mb-8 p-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center flex-wrap">
-            <div className="flex-grow md:flex-grow-0">
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Temporada</label>
+          <div className="flex flex-col md:flex-row gap-6 items-center">
+            <div className="flex-grow md:flex-grow-0 w-full md:w-auto">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">Temporada</label>
               <Select value={selectedTemporada} onValueChange={setSelectedTemporada}>
                 <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Temporada" />
@@ -147,8 +147,8 @@ export default function PartidosPage() {
               </Select>
             </div>
 
-            <div className="flex-grow md:flex-grow-0">
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Jornada</label>
+            <div className="flex-grow md:flex-grow-0 w-full md:w-auto">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">Jornada</label>
               <Select value={selectedJornada} onValueChange={setSelectedJornada}>
                 <SelectTrigger className="w-full md:w-[150px]">
                   <SelectValue placeholder="Jornada" />
@@ -160,23 +160,28 @@ export default function PartidosPage() {
               </Select>
             </div>
 
-            <div className="flex-grow md:flex-grow-0 md:ml-auto">
-              <Tabs value={selectedStatus} onValueChange={setSelectedStatus}>
-                <TabsList>
-                  <TabsTrigger value="todos">Todos</TabsTrigger>
-                  <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
-                  <TabsTrigger value="proximos">Próximos</TabsTrigger>
+            <div className="flex-grow md:flex-grow-0 w-full md:w-auto md:ml-auto">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">Estado</label>
+              <Tabs value={selectedStatus} onValueChange={setSelectedStatus} className="w-full">
+                <TabsList className="w-full md:w-auto grid grid-cols-3 h-11">
+                  <TabsTrigger value="todos" className="px-8">Todos</TabsTrigger>
+                  <TabsTrigger value="finalizados" className="px-8">Finalizados</TabsTrigger>
+                  <TabsTrigger value="proximos" className="px-8">Próximos</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
           </div>
-        </FilterCard>
+        </div>
 
         <div className="mt-8">
           {isLoading ? (
-            <p className="text-center text-muted-foreground py-10">Cargando partidos...</p>
+            <div className="text-center py-16 bg-card rounded-xl border backdrop-blur-sm">
+              <p className="text-lg text-muted-foreground">Cargando partidos...</p>
+            </div>
           ) : filteredPartidos.length === 0 ? (
-            <div className="text-center py-10 bg-card rounded-lg border"><p className="text-muted-foreground">No se encontraron partidos con los filtros seleccionados.</p></div>
+            <div className="text-center py-16 bg-card rounded-xl border backdrop-blur-sm">
+              <p className="text-lg text-muted-foreground">No se encontraron partidos con los filtros seleccionados.</p>
+            </div>
           ) : (
             <MatchList partidos={filteredPartidos} equiposMap={equiposMap} />
           )}

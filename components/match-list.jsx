@@ -59,126 +59,130 @@ export function MatchList({ partidos = [], equiposMap = {} }) {
   };
 
   return (
-    <div className="space-y-8 py-4">
-      {partidos.map((match) => {
-        const { date: matchDate, time: matchTime } = formatDateTime(match.fecha);
-        
-        const homeTeamName = equiposMap[match.equipo_local_id] || `ID: ${match.equipo_local_id}`;
-        const awayTeamName = equiposMap[match.equipo_visitante_id] || `ID: ${match.equipo_visitante_id}`;
-        const isUpcoming = match.estado?.toLowerCase() === 'próximo' || match.estado?.toLowerCase() === 'proximo' || match.estado?.toLowerCase() === 'programado';
-        const isFinished = match.estado?.toLowerCase() === 'finalizado';
-        
-        return (
-          <Link href={`/partidos/${match.id}`} key={match.id}>
-            <Card className={cn(
-              "transition-all duration-300 group backdrop-blur-sm",
-              getCardStyle(match.estado)
-            )}>
-              <CardContent className="p-0">
-                {/* Header with gradient */}
-                <div className={cn(
-                  "p-4 flex justify-between items-center border-b",
-                  isUpcoming && "bg-gradient-to-r from-purple-500/20 via-blue-500/25 to-primary/20",
-                  isFinished && "bg-gradient-to-r from-green-500/20 via-emerald-500/25 to-teal-500/20"
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid gap-8">
+          {partidos.map((match) => {
+            const { date: matchDate, time: matchTime } = formatDateTime(match.fecha);
+            
+            const homeTeamName = equiposMap[match.equipo_local_id] || `ID: ${match.equipo_local_id}`;
+            const awayTeamName = equiposMap[match.equipo_visitante_id] || `ID: ${match.equipo_visitante_id}`;
+            const isUpcoming = match.estado?.toLowerCase() === 'próximo' || match.estado?.toLowerCase() === 'proximo' || match.estado?.toLowerCase() === 'programado';
+            const isFinished = match.estado?.toLowerCase() === 'finalizado';
+            
+            return (
+              <Link href={`/partidos/${match.id}`} key={match.id} className="block">
+                <Card className={cn(
+                  "transition-all duration-300 group backdrop-blur-sm",
+                  getCardStyle(match.estado)
                 )}>
-                  <div className="flex items-center gap-4">
-                    {match.jornada && (
-                      <div className="flex items-center gap-2">
-                        <Trophy className={cn(
-                          "w-6 h-6",
-                          isUpcoming && "text-purple-500",
-                          isFinished && "text-green-500"
-                        )} />
-                        <span className={cn(
-                          "font-black text-2xl tracking-tight",
-                          isUpcoming && "text-purple-500",
-                          isFinished && "text-green-500"
-                        )}>J{match.jornada}</span>
-                        <span className="text-muted-foreground">•</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-foreground/70" />
-                      <span className="font-semibold text-foreground">{matchDate}</span>
-                      {matchTime && (
-                        <>
-                          <Clock className="w-5 h-5 ml-2 text-foreground/70" />
-                          <span className="font-medium text-foreground/90">{matchTime}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <Badge 
-                    variant={getStatusVariant(match.estado)}
-                    className={cn(
-                      "text-sm capitalize px-4 py-1.5 font-semibold tracking-wide transition-all duration-300",
-                      isUpcoming && "bg-purple-500/20 text-purple-700 dark:text-purple-300 hover:bg-purple-500/30 group-hover:bg-purple-500/30 group-hover:scale-105",
-                      isFinished && "bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/30 group-hover:bg-green-500/30 group-hover:scale-105"
-                    )}
-                  >
-                    {match.estado || 'Estado desc.'}
-                  </Badge>
-                </div>
-
-                {/* Body */}
-                <div className="p-8">
-                  <div className="flex items-center justify-between gap-4">
-                    {/* Home Team */}
-                    <div className="flex items-center space-x-4 flex-1">
-                      <div className={cn(
-                        "relative w-20 h-20 rounded-full overflow-hidden bg-muted ring-4 shadow-lg transition-all duration-300 group-hover:shadow-2xl",
-                        isUpcoming && "ring-purple-500/30 group-hover:ring-purple-500/50",
-                        isFinished && "ring-green-500/30 group-hover:ring-green-500/50"
-                      )}>
-                        <Image
-                          src={match.homeTeamLogo || getAvatarUrl(homeTeamName)}
-                          alt={homeTeamName}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="font-bold text-2xl tracking-tight group-hover:translate-x-1 transition-transform duration-300">{homeTeamName}</span>
-                    </div>
-
-                    {/* Score / VS */}
-                    <div className="flex items-center justify-center px-8">
-                      {isFinished ? (
-                        <div className="flex items-center space-x-4">
-                          <span className="text-4xl font-black text-green-600 dark:text-green-400">{match.goles_local ?? '-'}</span>
-                          <span className="text-2xl text-muted-foreground">-</span>
-                          <span className="text-4xl font-black text-green-600 dark:text-green-400">{match.goles_visitante ?? '-'}</span>
+                  <CardContent className="p-0">
+                    {/* Header with gradient */}
+                    <div className={cn(
+                      "p-3 flex justify-between items-center border-b",
+                      isUpcoming && "bg-gradient-to-r from-purple-500/20 via-blue-500/25 to-primary/20",
+                      isFinished && "bg-gradient-to-r from-green-500/20 via-emerald-500/25 to-teal-500/20"
+                    )}>
+                      <div className="flex items-center gap-3">
+                        {match.jornada && (
+                          <div className="flex items-center gap-2">
+                            <Trophy className={cn(
+                              "w-5 h-5",
+                              isUpcoming && "text-purple-500",
+                              isFinished && "text-green-500"
+                            )} />
+                            <span className={cn(
+                              "font-black text-xl tracking-tight",
+                              isUpcoming && "text-purple-500",
+                              isFinished && "text-green-500"
+                            )}>J{match.jornada}</span>
+                            <span className="text-muted-foreground">•</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-foreground/70" />
+                          <span className="font-semibold text-foreground text-sm">{matchDate}</span>
+                          {matchTime && (
+                            <>
+                              <Clock className="w-4 h-4 ml-2 text-foreground/70" />
+                              <span className="font-medium text-foreground/90 text-sm">{matchTime}</span>
+                            </>
+                          )}
                         </div>
-                      ) : (
-                        <div className="flex items-center space-x-3 bg-purple-500/10 px-6 py-3 rounded-full group-hover:bg-purple-500/20 transition-colors duration-300">
-                          <Swords className="w-7 h-7 text-purple-600 dark:text-purple-400" />
-                          <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">VS</span>
-                        </div>
-                      )}
+                      </div>
+                      <Badge 
+                        variant={getStatusVariant(match.estado)}
+                        className={cn(
+                          "text-xs capitalize px-3 py-1 font-semibold tracking-wide transition-all duration-300",
+                          isUpcoming && "bg-purple-500/20 text-purple-700 dark:text-purple-300 hover:bg-purple-500/30 group-hover:bg-purple-500/30 group-hover:scale-105",
+                          isFinished && "bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/30 group-hover:bg-green-500/30 group-hover:scale-105"
+                        )}
+                      >
+                        {match.estado || 'Estado desc.'}
+                      </Badge>
                     </div>
 
-                    {/* Away Team */}
-                    <div className="flex items-center space-x-4 flex-1 justify-end">
-                      <span className="font-bold text-2xl tracking-tight group-hover:-translate-x-1 transition-transform duration-300">{awayTeamName}</span>
-                      <div className={cn(
-                        "relative w-20 h-20 rounded-full overflow-hidden bg-muted ring-4 shadow-lg transition-all duration-300 group-hover:shadow-2xl",
-                        isUpcoming && "ring-purple-500/30 group-hover:ring-purple-500/50",
-                        isFinished && "ring-green-500/30 group-hover:ring-green-500/50"
-                      )}>
-                        <Image
-                          src={match.awayTeamLogo || getAvatarUrl(awayTeamName)}
-                          alt={awayTeamName}
-                          fill
-                          className="object-cover"
-                        />
+                    {/* Body */}
+                    <div className="p-6">
+                      <div className="flex items-center justify-between gap-4">
+                        {/* Home Team */}
+                        <div className="flex items-center space-x-3 flex-1">
+                          <div className={cn(
+                            "relative w-16 h-16 rounded-full overflow-hidden bg-muted ring-2 shadow-lg transition-all duration-300 group-hover:shadow-2xl",
+                            isUpcoming && "ring-purple-500/30 group-hover:ring-purple-500/50",
+                            isFinished && "ring-green-500/30 group-hover:ring-green-500/50"
+                          )}>
+                            <Image
+                              src={match.homeTeamLogo || getAvatarUrl(homeTeamName)}
+                              alt={homeTeamName}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <span className="font-bold text-xl tracking-tight group-hover:translate-x-1 transition-transform duration-300">{homeTeamName}</span>
+                        </div>
+
+                        {/* Score / VS */}
+                        <div className="flex items-center justify-center px-6">
+                          {isFinished ? (
+                            <div className="flex items-center space-x-3">
+                              <span className="text-3xl font-black text-green-600 dark:text-green-400">{match.goles_local ?? '-'}</span>
+                              <span className="text-xl text-muted-foreground">-</span>
+                              <span className="text-3xl font-black text-green-600 dark:text-green-400">{match.goles_visitante ?? '-'}</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2 bg-purple-500/10 px-4 py-2 rounded-full group-hover:bg-purple-500/20 transition-colors duration-300">
+                              <Swords className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                              <span className="text-xl font-bold text-purple-600 dark:text-purple-400">VS</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Away Team */}
+                        <div className="flex items-center space-x-3 flex-1 justify-end">
+                          <span className="font-bold text-xl tracking-tight group-hover:-translate-x-1 transition-transform duration-300">{awayTeamName}</span>
+                          <div className={cn(
+                            "relative w-16 h-16 rounded-full overflow-hidden bg-muted ring-2 shadow-lg transition-all duration-300 group-hover:shadow-2xl",
+                            isUpcoming && "ring-purple-500/30 group-hover:ring-purple-500/50",
+                            isFinished && "ring-green-500/30 group-hover:ring-green-500/50"
+                          )}>
+                            <Image
+                              src={match.awayTeamLogo || getAvatarUrl(awayTeamName)}
+                              alt={awayTeamName}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )
-      })}
+                  </CardContent>
+                </Card>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

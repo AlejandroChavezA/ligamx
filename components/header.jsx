@@ -21,22 +21,22 @@ export function Header() {
   const pathname = usePathname()
 
   return (
-    <header className="bg-white dark:bg-gray-950 shadow-sm">
+    <header className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-50">
       {/* Top bar with logo and navigation */}
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <div className="relative w-8 h-8">
+          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-3 group">
+            <div className="relative w-9 h-9 rounded-lg overflow-hidden ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300">
               <Image
-                src="/placeholder.svg?height=32&width=32"
+                src="/img/logo.png"
                 alt="Liga MX Logo"
                 fill
-                className="object-contain team-logo"
+                className="object-contain p-1"
               />
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tighter">
-                Liga<span className="text-yellow-300">MX</span>Stats
-              </h1>
+            <h1 className="text-2xl font-black tracking-tight">
+              Liga<span className="bg-gradient-to-r from-purple-500 to-primary bg-clip-text text-transparent">MX</span>Stats
+            </h1>
           </Link>
         </div>
 
@@ -53,10 +53,10 @@ export function Header() {
               key={item.name}
               href={item.href}
               className={cn(
-                "text-sm font-medium transition-colors",
+                "text-sm font-semibold transition-all duration-300 hover:text-primary relative py-1",
                 pathname === item.href
-                  ? "text-primary"
-                  : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary",
+                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
+                  : "text-muted-foreground hover:text-primary"
               )}
             >
               {item.name}
@@ -66,7 +66,7 @@ export function Header() {
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
           <ModeToggle />
-          <Button asChild size="sm">
+          <Button asChild size="sm" variant="default" className="font-semibold">
             <Link href="/login">Iniciar Sesión</Link>
           </Button>
         </div>
@@ -75,20 +75,20 @@ export function Header() {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden">
-          <div className="fixed inset-0 z-50 bg-gray-900/80" onClick={() => setMobileMenuOpen(false)} />
-          <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white dark:bg-gray-950 px-6 py-6 sm:max-w-sm">
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+          <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-background/95 backdrop-blur-md px-6 py-6 sm:max-w-sm border-l">
             <div className="flex items-center justify-between">
-              <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-                <div className="relative w-8 h-8">
+              <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <div className="relative w-8 h-8 rounded-lg overflow-hidden ring-2 ring-primary/20">
                   <Image
-                    src="/placeholder.svg?height=32&width=32"
+                    src="/img/logo.png"
                     alt="Liga MX Logo"
                     fill
-                    className="object-contain team-logo"
+                    className="object-contain p-1"
                   />
                 </div>
-                <span className="font-bold text-xl text-gray-900 dark:text-white">
-                  Liga<span className="text-primary">MX</span>Stats
+                <span className="font-bold text-xl">
+                  Liga<span className="bg-gradient-to-r from-purple-500 to-primary bg-clip-text text-transparent">MX</span>Stats
                 </span>
               </Link>
               <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
@@ -97,17 +97,17 @@ export function Header() {
               </Button>
             </div>
             <div className="mt-6 flow-root">
-              <div className="-my-6 divide-y divide-gray-200 dark:divide-gray-800">
-                <div className="space-y-2 py-6">
+              <div className="-my-6 divide-y divide-border">
+                <div className="space-y-1.5 py-6">
                   {navigation.map((item) => (
                     <Link
                       key={item.name}
                       href={item.href}
                       className={cn(
-                        "-mx-3 block rounded-lg px-3 py-2 text-base font-medium",
+                        "block rounded-lg px-4 py-2.5 text-base font-semibold transition-all duration-300",
                         pathname === item.href
-                          ? "bg-gray-50 text-primary dark:bg-gray-900"
-                          : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900",
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                       )}
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -115,14 +115,16 @@ export function Header() {
                     </Link>
                   ))}
                 </div>
-                <div className="py-6 flex flex-col gap-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Cambiar tema</span>
+                <div className="py-6 space-y-4">
+                  <div className="flex justify-between items-center px-4">
+                    <span className="text-sm font-medium text-muted-foreground">Cambiar tema</span>
                     <ModeToggle />
                   </div>
-                  <Button asChild>
-                    <Link href="/login">Iniciar Sesión</Link>
-                  </Button>
+                  <div className="px-4">
+                    <Button asChild className="w-full font-semibold">
+                      <Link href="/login">Iniciar Sesión</Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
