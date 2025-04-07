@@ -1,202 +1,184 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, Flag } from "lucide-react"
+import { Calendar, Clock, Trophy, Swords, Star } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 
-// Remove static teamLogos mapping
-// const teamLogos = { ... }
+// Helper function to generate avatar URL 
+const getAvatarUrl = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name || '?')}&background=random&color=fff&size=64`;
 
-// Sample Liga MX match data
-const allMatches = [
-  {
-    id: 1,
-    date: "2023-04-15",
-    homeTeam: "Club América",
-    awayTeam: "Guadalajara",
-    homeScore: 3,
-    awayScore: 2,
-    yellowCards: { home: 2, away: 3 },
-    redCards: { home: 0, away: 1 },
-    corners: { home: 7, away: 5 },
-    status: "Finalizado",
-    time: "19:00",
-  },
-  {
-    id: 2,
-    date: "2023-04-14",
-    homeTeam: "Cruz Azul",
-    awayTeam: "UNAM Pumas",
-    homeScore: 1,
-    awayScore: 1,
-    yellowCards: { home: 3, away: 2 },
-    redCards: { home: 0, away: 0 },
-    corners: { home: 6, away: 4 },
-    status: "Finalizado",
-    time: "21:00",
-  },
-  {
-    id: 3,
-    date: "2023-04-13",
-    homeTeam: "Tigres UANL",
-    awayTeam: "Monterrey",
-    homeScore: 2,
-    awayScore: 0,
-    yellowCards: { home: 1, away: 2 },
-    redCards: { home: 0, away: 0 },
-    corners: { home: 5, away: 8 },
-    status: "Finalizado",
-    time: "19:00",
-  },
-  {
-    id: 4,
-    date: "2023-05-20",
-    homeTeam: "Santos Laguna",
-    awayTeam: "Toluca",
-    homeScore: null,
-    awayScore: null,
-    yellowCards: { home: 0, away: 0 },
-    redCards: { home: 0, away: 0 },
-    corners: { home: 0, away: 0 },
-    status: "Próximo",
-    time: "20:00",
-  },
-  {
-    id: 5,
-    date: "2023-05-21",
-    homeTeam: "Club América",
-    awayTeam: "Cruz Azul",
-    homeScore: null,
-    awayScore: null,
-    yellowCards: { home: 0, away: 0 },
-    redCards: { home: 0, away: 0 },
-    corners: { home: 0, away: 0 },
-    status: "Próximo",
-    time: "19:00",
-  },
-]
-
-// Helper function to generate avatar URL
-const getAvatarUrl = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=64`;
-
-export function MatchList({ filter = "todos" }) {
-  // Filter matches based on the filter prop
-  const matches = allMatches.filter((match) => {
-    if (filter === "todos") return true
-    if (filter === "finalizados") return match.status === "Finalizado"
-    if (filter === "proximos") return match.status === "Próximo"
-    return true
-  })
-
-  if (matches.length === 0) {
+// MatchList now accepts partidos and equiposMap
+export function MatchList({ partidos = [], equiposMap = {} }) { 
+  
+  if (!partidos || partidos.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 dark:text-gray-400">No hay partidos disponibles.</p>
+        <p className="text-muted-foreground">No hay partidos para mostrar.</p> 
       </div>
     )
   }
 
+  // Helper to format datetime string
+  const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return { date: 'Fecha desc.', time: '' };
+    try {
+      const dateObj = new Date(dateTimeString);
+      const formattedDate = dateObj.toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+      const formattedTime = dateObj.toLocaleTimeString("es-ES", {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      return { date: formattedDate, time: formattedTime };
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return { date: 'Fecha inválida', time: '' };
+    }
+  };
+
+  const getStatusVariant = (status) => {
+    const lowerStatus = status?.toLowerCase();
+    if (lowerStatus === 'finalizado') return 'default';
+    if (lowerStatus === 'próximo' || lowerStatus === 'proximo' || lowerStatus === 'programado') return 'default';
+    return 'outline';
+  };
+
+  const getCardStyle = (status) => {
+    const lowerStatus = status?.toLowerCase();
+    if (lowerStatus === 'próximo' || lowerStatus === 'proximo' || lowerStatus === 'programado') {
+      return "border-2 border-primary/40 bg-gradient-to-br from-purple-500/10 via-blue-500/5 to-primary/20 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/30 hover:border-primary/60 hover:bg-gradient-to-br hover:from-purple-500/20 hover:via-blue-500/15 hover:to-primary/30";
+    }
+    if (lowerStatus === 'finalizado') {
+      return "border-2 border-green-500/40 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-teal-500/20 hover:scale-[1.02] hover:shadow-xl hover:shadow-green-500/30 hover:border-green-500/60 hover:bg-gradient-to-br hover:from-green-500/20 hover:via-emerald-500/15 hover:to-teal-500/30";
+    }
+    return "border hover:shadow-md";
+  };
+
   return (
-    <div className="space-y-4">
-      {matches.map((match) => (
-        <Link href={`/partidos/${match.id}`} key={match.id}>
-          <Card className="border hover:border-primary/50 transition-colors cursor-pointer">
-            <CardContent className="p-0">
-              <div className="match-card-header p-3 flex justify-between items-center">
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(match.date).toLocaleDateString("es-ES", {
-                    day: "numeric",
-                    month: "long",
-                  })}{" "}
-                  • {match.time}
-                </div>
-                <Badge variant={match.status === "Finalizado" ? "secondary" : "outline"} className="text-xs">
-                  {match.status}
-                </Badge>
-              </div>
-
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3 flex-1">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted">
-                      <Image
-                        // Use generated avatar URL
-                        src={getAvatarUrl(match.homeTeam)}
-                        alt={match.homeTeam}
-                        fill
-                        className="object-cover team-logo"
-                      />
-                    </div>
-                    <span className="font-medium">{match.homeTeam}</span>
-                  </div>
-
-                  <div className="flex items-center justify-center px-4">
-                    {match.status === "Finalizado" ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xl font-bold">{match.homeScore}</span>
-                        <span className="text-gray-400">-</span>
-                        <span className="text-xl font-bold">{match.awayScore}</span>
+    <div className="space-y-8 py-4">
+      {partidos.map((match) => {
+        const { date: matchDate, time: matchTime } = formatDateTime(match.fecha);
+        
+        const homeTeamName = equiposMap[match.equipo_local_id] || `ID: ${match.equipo_local_id}`;
+        const awayTeamName = equiposMap[match.equipo_visitante_id] || `ID: ${match.equipo_visitante_id}`;
+        const isUpcoming = match.estado?.toLowerCase() === 'próximo' || match.estado?.toLowerCase() === 'proximo' || match.estado?.toLowerCase() === 'programado';
+        const isFinished = match.estado?.toLowerCase() === 'finalizado';
+        
+        return (
+          <Link href={`/partidos/${match.id}`} key={match.id}>
+            <Card className={cn(
+              "transition-all duration-300 group backdrop-blur-sm",
+              getCardStyle(match.estado)
+            )}>
+              <CardContent className="p-0">
+                {/* Header with gradient */}
+                <div className={cn(
+                  "p-4 flex justify-between items-center border-b",
+                  isUpcoming && "bg-gradient-to-r from-purple-500/20 via-blue-500/25 to-primary/20",
+                  isFinished && "bg-gradient-to-r from-green-500/20 via-emerald-500/25 to-teal-500/20"
+                )}>
+                  <div className="flex items-center gap-4">
+                    {match.jornada && (
+                      <div className="flex items-center gap-2">
+                        <Trophy className={cn(
+                          "w-6 h-6",
+                          isUpcoming && "text-purple-500",
+                          isFinished && "text-green-500"
+                        )} />
+                        <span className={cn(
+                          "font-black text-2xl tracking-tight",
+                          isUpcoming && "text-purple-500",
+                          isFinished && "text-green-500"
+                        )}>J{match.jornada}</span>
+                        <span className="text-muted-foreground">•</span>
                       </div>
-                    ) : (
-                      <span className="text-sm font-medium text-gray-500">vs</span>
                     )}
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-foreground/70" />
+                      <span className="font-semibold text-foreground">{matchDate}</span>
+                      {matchTime && (
+                        <>
+                          <Clock className="w-5 h-5 ml-2 text-foreground/70" />
+                          <span className="font-medium text-foreground/90">{matchTime}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
+                  <Badge 
+                    variant={getStatusVariant(match.estado)}
+                    className={cn(
+                      "text-sm capitalize px-4 py-1.5 font-semibold tracking-wide transition-all duration-300",
+                      isUpcoming && "bg-purple-500/20 text-purple-700 dark:text-purple-300 hover:bg-purple-500/30 group-hover:bg-purple-500/30 group-hover:scale-105",
+                      isFinished && "bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/30 group-hover:bg-green-500/30 group-hover:scale-105"
+                    )}
+                  >
+                    {match.estado || 'Estado desc.'}
+                  </Badge>
+                </div>
 
-                  <div className="flex items-center space-x-3 flex-1 justify-end">
-                    <span className="font-medium">{match.awayTeam}</span>
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted">
-                      <Image
-                        // Use generated avatar URL
-                        src={getAvatarUrl(match.awayTeam)}
-                        alt={match.awayTeam}
-                        fill
-                        className="object-cover team-logo"
-                      />
+                {/* Body */}
+                <div className="p-8">
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Home Team */}
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className={cn(
+                        "relative w-20 h-20 rounded-full overflow-hidden bg-muted ring-4 shadow-lg transition-all duration-300 group-hover:shadow-2xl",
+                        isUpcoming && "ring-purple-500/30 group-hover:ring-purple-500/50",
+                        isFinished && "ring-green-500/30 group-hover:ring-green-500/50"
+                      )}>
+                        <Image
+                          src={match.homeTeamLogo || getAvatarUrl(homeTeamName)}
+                          alt={homeTeamName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <span className="font-bold text-2xl tracking-tight group-hover:translate-x-1 transition-transform duration-300">{homeTeamName}</span>
+                    </div>
+
+                    {/* Score / VS */}
+                    <div className="flex items-center justify-center px-8">
+                      {isFinished ? (
+                        <div className="flex items-center space-x-4">
+                          <span className="text-4xl font-black text-green-600 dark:text-green-400">{match.goles_local ?? '-'}</span>
+                          <span className="text-2xl text-muted-foreground">-</span>
+                          <span className="text-4xl font-black text-green-600 dark:text-green-400">{match.goles_visitante ?? '-'}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-3 bg-purple-500/10 px-6 py-3 rounded-full group-hover:bg-purple-500/20 transition-colors duration-300">
+                          <Swords className="w-7 h-7 text-purple-600 dark:text-purple-400" />
+                          <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">VS</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex items-center space-x-4 flex-1 justify-end">
+                      <span className="font-bold text-2xl tracking-tight group-hover:-translate-x-1 transition-transform duration-300">{awayTeamName}</span>
+                      <div className={cn(
+                        "relative w-20 h-20 rounded-full overflow-hidden bg-muted ring-4 shadow-lg transition-all duration-300 group-hover:shadow-2xl",
+                        isUpcoming && "ring-purple-500/30 group-hover:ring-purple-500/50",
+                        isFinished && "ring-green-500/30 group-hover:ring-green-500/50"
+                      )}>
+                        <Image
+                          src={match.awayTeamLogo || getAvatarUrl(awayTeamName)}
+                          alt={awayTeamName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {match.status === "Finalizado" && (
-                  <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-3 text-sm">
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center mb-1">
-                        <AlertTriangle className="h-3 w-3 text-yellow-500 mr-1" />
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Amarillas</span>
-                      </div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium">{match.yellowCards.home}</span>
-                        <span className="font-medium">{match.yellowCards.away}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center mb-1">
-                        <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Rojas</span>
-                      </div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium">{match.redCards.home}</span>
-                        <span className="font-medium">{match.redCards.away}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center mb-1">
-                        <Flag className="h-3 w-3 text-blue-500 mr-1" />
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Esquinas</span>
-                      </div>
-                      <div className="flex justify-between w-full">
-                        <span className="font-medium">{match.corners.home}</span>
-                        <span className="font-medium">{match.corners.away}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
+              </CardContent>
+            </Card>
+          </Link>
+        )
+      })}
     </div>
   )
 }
