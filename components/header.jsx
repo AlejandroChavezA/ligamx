@@ -66,9 +66,6 @@ export function Header() {
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
           <ModeToggle />
-          <Button asChild size="sm" variant="default" className="font-semibold">
-            <Link href="/login">Iniciar Sesión</Link>
-          </Button>
         </div>
       </nav>
 
@@ -119,11 +116,6 @@ export function Header() {
                   <div className="flex justify-between items-center px-4">
                     <span className="text-sm font-medium text-muted-foreground">Cambiar tema</span>
                     <ModeToggle />
-                  </div>
-                  <div className="px-4">
-                    <Button asChild className="w-full font-semibold">
-                      <Link href="/login">Iniciar Sesión</Link>
-                    </Button>
                   </div>
                 </div>
               </div>

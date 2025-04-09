@@ -10,7 +10,7 @@ const getAvatarUrl = (name) => `https://ui-avatars.com/api/?name=${encodeURIComp
 async function getTeams() {
   try {
     // Ensure fetch uses absolute URL for server-side rendering/fetching
-    const res = await fetch('http://localhost:3010/api/students/sas/equipos', {
+    const res = await fetch('https://fullstack4-dte6hbhbh4akaubk.canadacentral-01.azurewebsites.net/api/students/sas/equipos', {
       cache: 'no-store', // Avoid caching issues during development or if data changes often
     });
 
@@ -71,45 +71,31 @@ export default async function TeamsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teams.map((team) => (
-                <Link href={`/equipos/${team.id || team._id}`} key={team.id || team._id}>
-                  <Card className="group overflow-hidden border bg-gradient-to-br from-card to-card/80 hover:from-purple-500/10 hover:to-primary/10 transition-all duration-300">
-                    <CardHeader className="flex flex-row items-center gap-4 pb-2 relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-primary/10 ring-2 ring-primary/30 group-hover:ring-primary/50 group-hover:ring-[3px] transition-all duration-300 shadow-lg">
-                        <Image
-                          src={team.logoUrl || getAvatarUrl(team.nombre)}
-                          alt={team.nombre || 'Logo del equipo'}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="relative">
-                        <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{team.nombre}</CardTitle>
-                        <CardDescription className="text-sm text-muted-foreground group-hover:text-primary/70 transition-colors">
-                          {team.ciudad || 'Ciudad Desconocida'}
-                        </CardDescription>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-2 pb-4 relative">
-                      <div className="flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary/70 transition-colors">
-                        <span className="font-medium">Ver detalles del equipo</span>
-                        <svg
-                          className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <Card key={team.id || team._id} className="group overflow-hidden border bg-gradient-to-br from-card to-card/80 hover:from-purple-500/10 hover:to-primary/10 transition-all duration-300">
+                  <CardHeader className="flex flex-row items-center gap-4 pb-2 relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-primary/10 ring-2 ring-primary/30 group-hover:ring-primary/50 group-hover:ring-[3px] transition-all duration-300 shadow-lg">
+                      <Image
+                        src={team.logoUrl || getAvatarUrl(team.nombre)}
+                        alt={team.nombre || 'Logo del equipo'}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="relative">
+                      <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{team.nombre}</CardTitle>
+                      <CardDescription className="text-sm text-muted-foreground group-hover:text-primary/70 transition-colors">
+                        {team.ciudad || 'Ciudad Desconocida'}
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-2 pb-4 relative">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary/70 transition-colors">
+                      <span className="font-medium">Fundado en {team.anio_fundacion}</span>
+                      <span className="font-medium">Colores: {team.colores}</span>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}

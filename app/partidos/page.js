@@ -34,7 +34,7 @@ async function getPartidos() {
 // Function to fetch equipos
 async function getEquipos() {
   try {
-    const res = await fetch("http://localhost:3010/api/students/sas/equipos", {
+    const res = await fetch("https://fullstack4-dte6hbhbh4akaubk.canadacentral-01.azurewebsites.net/api/students/sas/equipos", {
       cache: "no-store",
     }); // Use equipos endpoint
     if (!res.ok) throw new Error("Failed to fetch equipos");
