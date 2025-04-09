@@ -1,267 +1,423 @@
-import { BarChart3, PieChart, TrendingUp } from 'lucide-react'
+"use client"
+
+import Link from "next/link"
+import Image from "next/image"
+import { BarChart3, PieChart, TrendingUp, Trophy, Goal, Users, Star, Award, Timer, Activity, Table } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TeamFilter } from "@/components/team-filter"
+import { useState, useEffect } from "react"
+
+// Helper function to generate avatar URL (reused from other components)
+const getAvatarUrl = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+
+// Function to calculate standings from matches
+const calculateStandings = (matches, equiposMap) => {
+  console.log('Calculating standings with matches:', JSON.stringify(matches, null, 2));
+  console.log('Using equipos map:', equiposMap);
+
+  const standings = {};
+
+  // Initialize standings object
+  Object.values(equiposMap).forEach(teamName => {
+    standings[teamName] = {
+      name: teamName,
+      points: 0,
+      played: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0
+    };
+  });
+
+  // Calculate statistics from matches
+  matches.forEach(match => {
+    console.log('Processing match:', match);
+    
+    // Verificar si el partido está finalizado y tiene los datos necesarios
+    if (match.estado?.toLowerCase() === 'finalizado' && 
+        match.equipo_local && 
+        match.equipo_visitante && 
+        match.goles_local !== undefined && 
+        match.goles_visitante !== undefined) {
+      
+      const localTeam = match.equipo_local;
+      const visitorTeam = match.equipo_visitante;
+      
+      console.log('Match teams:', { localTeam, visitorTeam });
+      console.log('Match goals:', { local: match.goles_local, visitor: match.goles_visitante });
+      
+      if (standings[localTeam] && standings[visitorTeam]) {
+        const localGoals = parseInt(match.goles_local) || 0;
+        const visitorGoals = parseInt(match.goles_visitante) || 0;
+
+        // Update local team stats
+        standings[localTeam].played++;
+        standings[localTeam].goalsFor += localGoals;
+        standings[localTeam].goalsAgainst += visitorGoals;
+
+        // Update visitor team stats
+        standings[visitorTeam].played++;
+        standings[visitorTeam].goalsFor += visitorGoals;
+        standings[visitorTeam].goalsAgainst += localGoals;
+
+        if (localGoals > visitorGoals) {
+          standings[localTeam].wins++;
+          standings[localTeam].points += 3;
+          standings[visitorTeam].losses++;
+        } else if (localGoals < visitorGoals) {
+          standings[visitorTeam].wins++;
+          standings[visitorTeam].points += 3;
+          standings[localTeam].losses++;
+        } else {
+          standings[localTeam].draws++;
+          standings[visitorTeam].draws++;
+          standings[localTeam].points += 1;
+          standings[visitorTeam].points += 1;
+        }
+      }
+    }
+  });
+
+  console.log('Final standings before sorting:', standings);
+
+  // Calculate goal difference and convert to array
+  const sortedStandings = Object.values(standings)
+    .map(team => ({
+      ...team,
+      goalDifference: team.goalsFor - team.goalsAgainst
+    }))
+    .sort((a, b) => 
+      b.points - a.points || 
+      b.goalDifference - a.goalDifference || 
+      b.goalsFor - a.goalsFor
+    );
+
+  console.log('Final sorted standings:', sortedStandings);
+  return sortedStandings;
+};
+
+// Function to calculate top scorers
+const calculateTopScorers = (matches, equiposMap) => {
+  const scorers = {};
+  
+  console.log('Analyzing matches for scorers:', matches); // Debug log
+
+  matches.forEach(match => {
+    if (match.estado?.toLowerCase() === 'finalizado') {
+      // Get goals from local team
+      const localGoals = parseInt(match.goles_local) || 0;
+      const visitorGoals = parseInt(match.goles_visitante) || 0;
+      
+      // If there are goals, add a placeholder scorer
+      if (localGoals > 0) {
+        const localTeam = equiposMap[match.local_id];
+        const scorerName = `Jugador ${localTeam}`;
+        if (!scorers[scorerName]) {
+          scorers[scorerName] = {
+            name: scorerName,
+            team: localTeam,
+            goals: 0
+          };
+        }
+        scorers[scorerName].goals += localGoals;
+      }
+      
+      if (visitorGoals > 0) {
+        const visitorTeam = equiposMap[match.visitante_id];
+        const scorerName = `Jugador ${visitorTeam}`;
+        if (!scorers[scorerName]) {
+          scorers[scorerName] = {
+            name: scorerName,
+            team: visitorTeam,
+            goals: 0
+          };
+        }
+        scorers[scorerName].goals += visitorGoals;
+      }
+    }
+  });
+
+  console.log('Calculated scorers:', scorers); // Debug log
+
+  return Object.values(scorers)
+    .sort((a, b) => b.goals - a.goals)
+    .slice(0, 5); // Get top 5 scorers
+};
+
+// Function to calculate overall stats
+const calculateOverallStats = (matches) => {
+  let totalGoals = 0;
+  let totalMatches = 0;
+
+  matches.forEach(match => {
+    if (match.estado?.toLowerCase() === 'finalizado') {
+      totalMatches++;
+      totalGoals += (parseInt(match.goles_local) || 0) + (parseInt(match.goles_visitante) || 0);
+    }
+  });
+
+  return {
+    totalGoals,
+    totalMatches,
+    averageGoals: totalMatches > 0 ? (totalGoals / totalMatches).toFixed(1) : 0
+  };
+};
 
 export default function EstadisticasPage() {
+  const [matches, setMatches] = useState([]);
+  const [equiposMap, setEquiposMap] = useState({});
+  const [standings, setStandings] = useState([]);
+  const [topScorers, setTopScorers] = useState([]);
+  const [overallStats, setOverallStats] = useState({ totalGoals: 0, totalMatches: 0, averageGoals: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log('Fetching data from API...');
+        const [matchesRes, equiposRes] = await Promise.all([
+          fetch('http://localhost:3010/api/students/sas/partidos'),
+          fetch('http://localhost:3010/api/students/sas/equipos')
+        ]);
+
+        if (!matchesRes.ok || !equiposRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const matchesData = await matchesRes.json();
+        const equiposData = await equiposRes.json();
+
+        console.log('Raw matches data:', JSON.stringify(matchesData, null, 2));
+        console.log('Raw equipos data:', JSON.stringify(equiposData, null, 2));
+
+        // Create equipos map
+        const equiposMapping = {};
+        equiposData.forEach(equipo => {
+          equiposMapping[equipo.id] = equipo.nombre;
+        });
+
+        console.log('Equipos mapping:', equiposMapping);
+
+        setMatches(matchesData);
+        setEquiposMap(equiposMapping);
+        
+        // Calculate all statistics
+        console.log('Calculating standings...');
+        const calculatedStandings = calculateStandings(matchesData, equiposMapping);
+        console.log('Calculated standings:', calculatedStandings);
+
+        console.log('Calculating top scorers...');
+        const calculatedTopScorers = calculateTopScorers(matchesData, equiposMapping);
+        console.log('Calculated top scorers:', calculatedTopScorers);
+
+        console.log('Calculating overall stats...');
+        const calculatedOverallStats = calculateOverallStats(matchesData);
+        console.log('Calculated overall stats:', calculatedOverallStats);
+
+        setStandings(calculatedStandings);
+        setTopScorers(calculatedTopScorers);
+        setOverallStats(calculatedOverallStats);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
-    <div className="bg-white dark:bg-gray-950 min-h-screen">
-      <div className="pt-8 pb-4 bg-gradient-to-r from-purple-700 to-purple-900">
+    <div className="min-h-screen bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-primary/10">
+      {/* Header Section */}
+      <div className="pt-12 pb-8 bg-gradient-to-br from-purple-500 via-blue-500 to-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-white">Estadísticas Liga MX</h1>
-          <p className="mt-2 text-purple-100">
-            Análisis detallado de todos los equipos y jugadores de la Liga MX
-          </p>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Estadísticas Liga MX</h1>
+          <p className="mt-3 text-lg text-purple-100 tracking-wide">Análisis detallado y estadísticas de la temporada actual</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-          <div className="flex items-center mb-4 sm:mb-0">
-            <TrendingUp className="h-5 w-5 text-primary mr-2" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Estadísticas generales
-            </h2>
-          </div>
-          <TeamFilter />
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-12">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card className="overflow-hidden border-2 border-purple-200 dark:border-purple-900 shadow-lg hover:shadow-xl transition-all duration-300 pulse-on-hover">
+            <div className="h-2 bg-primary"></div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-bold">Goles Totales</CardTitle>
+              <Goal className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold">{overallStats.totalGoals}</div>
+              <p className="text-xs text-muted-foreground font-medium">Promedio de {overallStats.averageGoals} por partido</p>
+              <p className="text-xs text-primary font-bold mt-2">Liga MX Apertura 2023</p>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden border-2 border-purple-200 dark:border-purple-900 shadow-lg hover:shadow-xl transition-all duration-300 pulse-on-hover">
+            <div className="h-2 bg-blue-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-bold">Partidos Jugados</CardTitle>
+              <Activity className="h-5 w-5 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold">{overallStats.totalMatches}</div>
+              <p className="text-xs text-muted-foreground font-medium">Jornada actual: 15</p>
+              <p className="text-xs text-primary font-bold mt-2">Liga MX Apertura 2023</p>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden border-2 border-purple-200 dark:border-purple-900 shadow-lg hover:shadow-xl transition-all duration-300 pulse-on-hover">
+            <div className="h-2 bg-green-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-bold">Promedio por Partido</CardTitle>
+              <Timer className="h-5 w-5 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold">{overallStats.averageGoals}</div>
+              <p className="text-xs text-muted-foreground font-medium">Goles por encuentro</p>
+              <p className="text-xs text-primary font-bold mt-2">Liga MX Apertura 2023</p>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden border-2 border-purple-200 dark:border-purple-900 shadow-lg hover:shadow-xl transition-all duration-300 pulse-on-hover">
+            <div className="h-2 bg-yellow-400"></div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-bold">Equipos</CardTitle>
+              <Star className="h-5 w-5 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold">{standings.length}</div>
+              <p className="text-xs text-muted-foreground font-medium">Participantes del torneo</p>
+              <p className="text-xs text-primary font-bold mt-2">Liga MX Apertura 2023</p>
+            </CardContent>
+          </Card>
         </div>
-        
-        <Tabs defaultValue="equipos" className="mb-6">
-          <TabsList className="mb-4">
-            <TabsTrigger value="equipos">Equipos</TabsTrigger>
-            <TabsTrigger value="jugadores">Jugadores</TabsTrigger>
-            <TabsTrigger value="arbitros">Árbitros</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="equipos">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    <BarChart3 className="h-5 w-5 text-primary mr-2" />
-                    Goles por equipo
-                  </CardTitle>
-                  <CardDescription>Temporada Apertura 2023</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { team: "Club América", value: 28 },
-                      { team: "Monterrey", value: 25 },
-                      { team: "Tigres UANL", value: 23 },
-                      { team: "Cruz Azul", value: 21 },
-                      { team: "Toluca", value: 19 }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center">
-                        <div className="w-36 text-sm font-medium truncate">{item.team}</div>
-                        <div className="flex-1">
-                          <div className="h-2 bg-primary rounded-full" style={{ width: `${(item.value / 30) * 100}%` }}></div>
-                        </div>
-                        <div className="w-10 text-right text-sm font-bold">{item.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    <BarChart3 className="h-5 w-5 text-yellow-500 mr-2" />
-                    Tarjetas amarillas
-                  </CardTitle>
-                  <CardDescription>Temporada Apertura 2023</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { team: "Guadalajara", value: 42 },
-                      { team: "Toluca", value: 38 },
-                      { team: "UNAM Pumas", value: 36 },
-                      { team: "Santos Laguna", value: 35 },
-                      { team: "Cruz Azul", value: 32 }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center">
-                        <div className="w-36 text-sm font-medium truncate">{item.team}</div>
-                        <div className="flex-1">
-                          <div className="h-2 bg-yellow-500 rounded-full" style={{ width: `${(item.value / 50) * 100}%` }}></div>
-                        </div>
-                        <div className="w-10 text-right text-sm font-bold">{item.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    <BarChart3 className="h-5 w-5 text-blue-500 mr-2" />
-                    Tiros de esquina
-                  </CardTitle>
-                  <CardDescription>Temporada Apertura 2023</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { team: "Tigres UANL", value: 87 },
-                      { team: "Club América", value: 82 },
-                      { team: "Monterrey", value: 76 },
-                      { team: "Cruz Azul", value: 71 },
-                      { team: "León", value: 68 }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center">
-                        <div className="w-36 text-sm font-medium truncate">{item.team}</div>
-                        <div className="flex-1">
-                          <div className="h-2 bg-blue-500 rounded-full" style={{ width: `${(item.value / 100) * 100}%` }}></div>
-                        </div>
-                        <div className="w-10 text-right text-sm font-bold">{item.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+
+        {/* Standings Table */}
+        <Card className="bg-card rounded-xl shadow-lg border backdrop-blur-sm mb-8">
+          <CardHeader className="flex flex-row items-center gap-4 pb-2">
+            <Table className="h-6 w-6 text-primary" />
+            <div>
+              <CardTitle className="text-2xl font-bold">Tabla General</CardTitle>
+              <CardDescription>Clasificación actual del torneo</CardDescription>
             </div>
-            
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Distribución de goles por jornada</CardTitle>
-                <CardDescription>Temporada Apertura 2023</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80 flex items-end justify-between gap-2">
-                  {Array.from({ length: 17 }).map((_, i) => {
-                    const height = Math.floor(Math.random() * 60) + 20;
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center">
-                        <div 
-                          className="w-full bg-primary rounded-t-sm" 
-                          style={{ height: `${height}%` }}
-                        ></div>
-                        <div className="text-xs mt-2">{i + 1}</div>
-                      </div>
-                    );
-                  })}
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Cargando tabla...</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Pos</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Equipo</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">PJ</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">G</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">E</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">P</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">GF</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">GC</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">DIF</th>
+                      <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">PTS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {standings.map((team, index) => (
+                      <tr 
+                        key={team.name}
+                        className="border-b border-border/50 hover:bg-accent/50 transition-colors"
+                      >
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-medium
+                            ${index < 4 ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
+                            {index + 1}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-primary/10 ring-1 ring-primary/20">
+                              <Image
+                                src={getAvatarUrl(team.name)}
+                                alt={team.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <span className="font-medium text-foreground">{team.name}</span>
+                          </div>
+                        </td>
+                        <td className="text-center py-3 px-4 text-muted-foreground">{team.played}</td>
+                        <td className="text-center py-3 px-4 text-muted-foreground">{team.wins}</td>
+                        <td className="text-center py-3 px-4 text-muted-foreground">{team.draws}</td>
+                        <td className="text-center py-3 px-4 text-muted-foreground">{team.losses}</td>
+                        <td className="text-center py-3 px-4 text-muted-foreground">{team.goalsFor}</td>
+                        <td className="text-center py-3 px-4 text-muted-foreground">{team.goalsAgainst}</td>
+                        <td className="text-center py-3 px-4">
+                          <span className={`font-medium ${
+                            team.goalDifference > 0 ? 'text-green-500' :
+                            team.goalDifference < 0 ? 'text-red-500' :
+                            'text-muted-foreground'
+                          }`}>
+                            {team.goalDifference > 0 ? '+' : ''}{team.goalDifference}
+                          </span>
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          <span className="font-bold text-primary">{team.points}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Top Scorers Section */}
+        <Card className="bg-card rounded-xl shadow-lg border backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center gap-4 pb-2">
+            <Trophy className="h-6 w-6 text-primary" />
+            <div>
+              <CardTitle className="text-2xl font-bold">Tabla de Goleadores</CardTitle>
+              <CardDescription>Los mejores anotadores de la temporada</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              {topScorers.map((scorer, index) => (
+                <div key={index} className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-primary/5 hover:from-purple-500/10 hover:to-primary/10 transition-colors">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-primary/10 ring-2 ring-primary/30">
+                    <Image
+                      src={getAvatarUrl(scorer.name)}
+                      alt={scorer.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-foreground">{scorer.name}</h4>
+                    <p className="text-sm text-muted-foreground">{scorer.team}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">{scorer.goals}</p>
+                      <p className="text-xs text-muted-foreground">Goles</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center mt-4 text-sm text-gray-500">Jornada</div>
-              </CardContent>
-            </Card>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <PieChart className="h-5 w-5 text-primary mr-2" />
-                    Posesión promedio
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-center mb-6">
-                    <div className="relative w-48 h-48">
-                      <div className="absolute inset-0 rounded-full border-8 border-gray-200"></div>
-                      <div 
-                        className="absolute inset-0 rounded-full border-8 border-primary" 
-                        style={{ 
-                          clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0% 100%)',
-                          transform: 'rotate(54deg)'
-                        }}
-                      ></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-3xl font-bold">54%</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 bg-primary mr-2"></div>
-                      <span className="text-sm">Club América - 54%</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 mr-2"></div>
-                      <span className="text-sm">Promedio de la liga - 46%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Efectividad de tiros</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Club América</span>
-                        <span className="text-sm font-medium">32%</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div className="h-2 bg-primary rounded-full" style={{ width: '32%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Monterrey</span>
-                        <span className="text-sm font-medium">28%</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div className="h-2 bg-primary rounded-full" style={{ width: '28%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Tigres UANL</span>
-                        <span className="text-sm font-medium">26%</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div className="h-2 bg-primary rounded-full" style={{ width: '26%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Cruz Azul</span>
-                        <span className="text-sm font-medium">24%</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div className="h-2 bg-primary rounded-full" style={{ width: '24%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Toluca</span>
-                        <span className="text-sm font-medium">22%</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div className="h-2 bg-primary rounded-full" style={{ width: '22%' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              ))}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="jugadores">
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">
-                Selecciona un equipo para ver las estadísticas de sus jugadores.
-              </p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="arbitros">
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">
-                Estadísticas de árbitros próximamente.
-              </p>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+          </CardContent>
+        </Card>
+      </main>
     </div>
-  )
+  );
 }

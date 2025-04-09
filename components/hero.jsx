@@ -48,7 +48,7 @@ export function Hero() {
     <section className="relative overflow-hidden">
       {/* Gradient Background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 via-primary/70 to-purple-700/80">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-blue-500 to-primary dark:from-purple-900/80 dark:via-primary/70 dark:to-purple-700/80">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJWMTBoMnYyMHptLTIgMGgtMlYxMGgydjIwek0zMCAzMGgtMlYxMGgydjIweiIvPjwvZz48L2c+PC9zdmc+')] opacity-5" />
         </div>
       </div>
@@ -58,32 +58,32 @@ export function Hero() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 items-center">
           {/* Left Column - Text Content */}
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white/90 sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
               <span className="block">Liga MX</span>
-              <span className="block bg-gradient-to-r from-purple-200/90 to-purple-100/90 bg-clip-text text-transparent">
+              <span className="block text-white/90 dark:bg-gradient-to-r dark:from-purple-200/90 dark:to-purple-100/90 dark:bg-clip-text dark:text-transparent">
                 Estadísticas en vivo
               </span>
             </h1>
-            <p className="mt-6 text-xl text-purple-100/80 max-w-xl">
+            <p className="mt-6 text-xl text-white/80 dark:text-purple-100/80 max-w-xl">
               Descubre todos los datos y estadísticas de la Liga MX en tiempo real. 
               Resultados, posiciones, y análisis detallado de cada partido.
             </p>
             
             {/* Quick Stats */}
             <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10">
                 <div className="flex items-center">
-                  <CalendarDays className="h-6 w-6 text-purple-200/80" />
-                  <span className="ml-2 text-sm font-medium text-purple-200/80">Jornada</span>
+                  <CalendarDays className="h-6 w-6 text-white dark:text-purple-200/80" />
+                  <span className="ml-2 text-sm font-medium text-white dark:text-purple-200/80">Jornada</span>
                 </div>
-                <p className="mt-2 text-2xl font-bold text-white/90">15</p>
+                <p className="mt-2 text-2xl font-bold text-white dark:text-white/90">15</p>
               </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10">
                 <div className="flex items-center">
-                  <TrendingUp className="h-6 w-6 text-purple-200/80" />
-                  <span className="ml-2 text-sm font-medium text-purple-200/80">Partidos</span>
+                  <TrendingUp className="h-6 w-6 text-white dark:text-purple-200/80" />
+                  <span className="ml-2 text-sm font-medium text-white dark:text-purple-200/80">Partidos</span>
                 </div>
-                <p className="mt-2 text-2xl font-bold text-white/90">9</p>
+                <p className="mt-2 text-2xl font-bold text-white dark:text-white/90">9</p>
               </div>
             </div>
 
@@ -92,7 +92,7 @@ export function Hero() {
               <Button
                 asChild
                 size="lg"
-                className="bg-white/80 text-primary hover:bg-white/90 transition-colors"
+                className="bg-gray-100 text-primary hover:bg-white/90 transition-colors dark:bg-white/80 dark:hover:bg-white/90"
               >
                 <Link href="/partidos">
                   Ver partidos
@@ -103,7 +103,7 @@ export function Hero() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="bg-white/5 text-white/90 border-white/10 hover:bg-white/10 transition-colors backdrop-blur-sm"
+                className="bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors backdrop-blur-sm dark:bg-white/5 dark:text-white/90 dark:border-white/10 dark:hover:bg-white/10"
               >
                 <Link href="/estadisticas">
                   Explorar estadísticas
@@ -114,11 +114,11 @@ export function Hero() {
 
           {/* Right Column - Featured Match */}
           <div className="hidden lg:block">
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-colors">
-              <h3 className="text-lg font-semibold text-white/90 mb-4">Próximo partido destacado</h3>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-colors dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10">
+              <h3 className="text-lg font-semibold text-white dark:text-white/90 mb-4">Próximo partido destacado</h3>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/10 bg-white/5">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/20 bg-white/10 dark:ring-white/10 dark:bg-white/5">
                     <Image
                       src={getTeamIcon("América")}
                       alt="América"
@@ -127,14 +127,14 @@ export function Hero() {
                       className="object-contain p-2"
                     />
                   </div>
-                  <span className="text-lg font-bold text-white/90">América</span>
+                  <span className="text-lg font-bold text-white dark:text-white/90">América</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-sm font-medium text-purple-200/80">VS</span>
+                  <span className="text-sm font-medium text-white dark:text-purple-200/80">VS</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold text-white/90">Cruz Azul</span>
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/10 bg-white/5">
+                  <span className="text-lg font-bold text-white dark:text-white/90">Cruz Azul</span>
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/20 bg-white/10 dark:ring-white/10 dark:bg-white/5">
                     <Image
                       src={getTeamIcon("Cruz Azul")}
                       alt="Cruz Azul"
@@ -146,7 +146,7 @@ export function Hero() {
                 </div>
               </div>
               <div className="mt-4 flex justify-between items-center">
-                <div className="flex items-center text-purple-200/80">
+                <div className="flex items-center text-white/80 dark:text-purple-200/80">
                   <CalendarDays className="h-4 w-4 mr-2" />
                   <span className="text-sm">Sábado, 20:00 hrs</span>
                 </div>
@@ -154,7 +154,7 @@ export function Hero() {
                   asChild
                   variant="outline"
                   size="sm"
-                  className="text-white/90 bg-white-200 border-white/10 hover:bg-gray-900/10"
+                  className="text-white border-white/20  bg-white/10 hover:bg-white/20 dark:text-white/90 dark:border-white/10 dark:hover:bg-white/10"
                 >
                   <Link href="/partidos/1">
                     Ver detalles

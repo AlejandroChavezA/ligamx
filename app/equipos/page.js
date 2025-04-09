@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
+import { Shield, Users } from "lucide-react"
 
 // Helper function to generate avatar URL
 const getAvatarUrl = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
@@ -39,38 +40,74 @@ export default async function TeamsPage() {
   console.log("Teams data received by component:", JSON.stringify(teams, null, 2)); // Log the data the component uses
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <div className="pt-8 pb-4 bg-gradient-to-r liga-mx-gradient">
+    <div className="min-h-screen bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-primary/10">
+      <div className="pt-12 pb-8 bg-gradient-to-br from-purple-500 via-blue-500 to-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-white">Equipos Liga MX</h1> {/* Adjusted title slightly */}
-          <p className="mt-2 text-purple-100">Información de los equipos de la temporada</p>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Equipos Liga MX</h1>
+          <p className="mt-3 text-lg text-purple-100 tracking-wide">Explora todos los equipos de la temporada actual</p>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          {/* Display message if no teams were fetched */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-12">
+        <div className="bg-card rounded-xl shadow-lg border backdrop-blur-sm p-6 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex items-center">
+              <Shield className="h-6 w-6 text-primary mr-3" />
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">Equipos participantes</h2>
+                <p className="text-sm text-muted-foreground mt-1">Temporada 2024</p>
+              </div>
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Users className="h-5 w-5 mr-2" />
+              <span>{teams.length} equipos</span>
+            </div>
+          </div>
+
           {teams.length === 0 ? (
-            <p className="text-center text-muted-foreground">No se pudieron cargar los equipos o no hay equipos disponibles.</p>
+            <div className="text-center py-16 bg-card/50 rounded-xl border backdrop-blur-sm">
+              <p className="text-lg text-muted-foreground">No se pudieron cargar los equipos o no hay equipos disponibles.</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teams.map((team) => (
                 <Link href={`/equipos/${team.id || team._id}`} key={team.id || team._id}>
-                  <Card className="overflow-hidden border-2 border-purple-200 dark:border-purple-900 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
-                    <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-muted"> 
-                        <Image 
+                  <Card className="group overflow-hidden border bg-gradient-to-br from-card to-card/80 hover:from-purple-500/10 hover:to-primary/10 transition-all duration-300">
+                    <CardHeader className="flex flex-row items-center gap-4 pb-2 relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-purple-500/10 to-primary/10 ring-2 ring-primary/30 group-hover:ring-primary/50 group-hover:ring-[3px] transition-all duration-300 shadow-lg">
+                        <Image
                           src={team.logoUrl || getAvatarUrl(team.nombre)}
                           alt={team.nombre || 'Logo del equipo'}
-                          fill 
-                          className="object-cover" 
+                          fill
+                          className="object-cover"
                         />
                       </div>
-                      <div>
-                        <CardTitle>{team.nombre}</CardTitle>
-                        <CardDescription>{team.ciudad || 'Ciudad Desconocida'}</CardDescription>
+                      <div className="relative">
+                        <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{team.nombre}</CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground group-hover:text-primary/70 transition-colors">
+                          {team.ciudad || 'Ciudad Desconocida'}
+                        </CardDescription>
                       </div>
                     </CardHeader>
+                    <CardContent className="pt-2 pb-4 relative">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary/70 transition-colors">
+                        <span className="font-medium">Ver detalles del equipo</span>
+                        <svg
+                          className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                    </CardContent>
                   </Card>
                 </Link>
               ))}
