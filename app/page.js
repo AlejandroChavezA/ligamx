@@ -37,10 +37,10 @@ export default function Home() {
       try {
         // Fetch both partidos and equipos data
         const [partidosRes, equiposRes] = await Promise.all([
-          fetch('http://localhost:3010/api/students/sas/partidos', {
+          fetch('https://fullstack4-dte6hbhbh4akaubk.canadacentral-01.azurewebsites.net/api/students/sas/partidos', {
             cache: 'no-store',
           }),
-          fetch('http://localhost:3010/api/students/sas/equipos', {
+          fetch('https://fullstack4-dte6hbhbh4akaubk.canadacentral-01.azurewebsites.net/api/students/sas/equipos', {
             cache: 'no-store',
           })
         ]);

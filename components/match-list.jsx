@@ -146,9 +146,9 @@ export function MatchList({ partidos = [], equiposMap = {} }) {
                         <div className="flex items-center justify-center px-6">
                           {isFinished ? (
                             <div className="flex items-center space-x-3">
-                              <span className="text-3xl font-black text-green-600 dark:text-green-400">{match.goles_local ?? '-'}</span>
+                              <span className="text-3xl font-black text-green-600 dark:text-green-400">{match.goles_local || 0}</span>
                               <span className="text-xl text-muted-foreground">-</span>
-                              <span className="text-3xl font-black text-green-600 dark:text-green-400">{match.goles_visitante ?? '-'}</span>
+                              <span className="text-3xl font-black text-green-600 dark:text-green-400">{match.goles_visitante || 0}</span>
                             </div>
                           ) : (
                             <div className="flex items-center space-x-2 bg-purple-500/10 px-4 py-2 rounded-full group-hover:bg-purple-500/20 transition-colors duration-300">

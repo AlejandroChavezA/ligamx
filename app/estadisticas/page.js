@@ -180,8 +180,8 @@ export default function EstadisticasPage() {
       try {
         console.log('Fetching data from API...');
         const [matchesRes, equiposRes] = await Promise.all([
-          fetch('http://localhost:3010/api/students/sas/partidos'),
-          fetch('http://localhost:3010/api/students/sas/equipos')
+          fetch('https://fullstack4-dte6hbhbh4akaubk.canadacentral-01.azurewebsites.net/api/students/sas/partidos'),
+          fetch('https://fullstack4-dte6hbhbh4akaubk.canadacentral-01.azurewebsites.net/api/students/sas/equipos')
         ]);
 
         if (!matchesRes.ok || !equiposRes.ok) {

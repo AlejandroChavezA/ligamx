@@ -18,7 +18,7 @@ import { Card as FilterCard } from "@/components/ui/card"; // Alias Card to avoi
 // Function to fetch partidos - can be defined outside or imported
 async function getPartidos() {
   try {
-    const res = await fetch("http://localhost:3010/api/students/sas/partidos", {
+    const res = await fetch("https://fullstack4-dte6hbhbh4akaubk.canadacentral-01.azurewebsites.net/api/students/sas/partidos", {
       cache: "no-store",
     });
     console.log('🟢 DEBUG: res =>', res)
